@@ -52,7 +52,7 @@ def filter(objs):
         obj['object']['id'] = obj['object']['id'].split("/")[-1]
     return objs
 
-def main():
+def hacerDiccionario():
     with open(TRACES_FILE) as traces:
         all_traces = json.loads(traces.read())    
         for trace in all_traces:
@@ -63,9 +63,11 @@ def main():
                     user_traces[user]['LevelTries'][trace['object']['id'].split('/')[-1]]=trace
                 if(trace['verb']['id'] == 'http://adlnet.gov/expapi/verbs/completed' and trace['object']['definition']['type']=='https://w3id.org/xapi/seriousgames/activity-types/level'):
                     user_traces[user]['SuccessLevels' if trace['result']['success'] else 'FailedLevels'].append(trace)
-                    
-            # print(trace)
+    
+    return user_traces
 
+
+def printTraces(user_traces):
     print("[")
     for key in user_traces.keys():
         
@@ -87,6 +89,10 @@ def main():
             print(',')
     print("]")
 
+
+def main():
+    printTraces(hacerDiccionario())
+    
 
 if __name__ == "__main__":
     main()
