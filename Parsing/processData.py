@@ -29,6 +29,10 @@ class Tester:
     #Diccionario que tiene una entrada por nivel jugado con informacion de su desempeño en cada uno
     infoLevels = dict()
 
+    def __init__(self):
+        self.programador=False
+        self.infoLevels= dict()
+
 
 def main():
 
@@ -126,6 +130,7 @@ def main():
         else:
             Probadores[datosCSV[pos][1]].programador = True
     
+    a = 0
 
 main()
 
