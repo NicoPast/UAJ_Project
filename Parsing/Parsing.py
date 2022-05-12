@@ -69,8 +69,16 @@ def hacerDiccionario():
 
 def printTraces(user_traces):
     print("[")
+    user_traces=prettify(user_traces)
     for key in user_traces.keys():
-        
+        print(json.dumps(user_traces[key], indent=4))
+        if(key != list(user_traces.keys())[-1]):
+            print(',')
+        print("]")
+
+def prettify(user_traces):
+    for key in user_traces.keys():
+    
         #Convert sets(dicts) to lists
         user_traces[key]['LevelTries'] = list(user_traces[key]['LevelTries'].values())
 
@@ -83,13 +91,7 @@ def printTraces(user_traces):
         user_traces[key]['LevelTries'] = filter(user_traces[key]['LevelTries'])
         user_traces[key]['FailedLevels'] = filter(user_traces[key]['FailedLevels'])
         user_traces[key]['SuccessLevels'] = filter(user_traces[key]['SuccessLevels'])
-
-        print(json.dumps(user_traces[key], indent=4))
-        if(key != list(user_traces.keys())[-1]):
-            print(',')
-    print("]")
-
-
+    return user_traces
 def main():
     printTraces(hacerDiccionario())
     
