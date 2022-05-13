@@ -35,6 +35,7 @@ datExample = '''{[
 ]}'''
 
 size = 100
+numLevels = 3
 
 levels = np.append(np.append(np.zeros(size), np.ones(size)), np.ones(size) + 1)
 levelsNames = ["Level 1", "Level 2", "Level 3"]
@@ -75,10 +76,12 @@ app.layout = html.Div([
     #dcc.Graph(id="graph"),
     #dcc.Graph(id="graph2"),
     #dcc.Graph(id="graphTime1"),
-    dcc.Graph(id="graphTime"),
-    dcc.Graph(id="graphTries"),
+    dcc.Graph(id="graphTime", style={'height':'1000px'}),
+    dcc.Graph(id="graphTries", style={'height':'1000px'}),
     dcc.Graph(id="graphHelp", style={'width': '90vh', 'height':'800px'}),
     dcc.Graph(id="graphOptim", style={'width': '90vh', 'height':'800px'}),
+    dcc.Graph(id="graphTest", style={'height':'1000px'}),
+
 ])
 
 # @app.callback(
@@ -122,7 +125,7 @@ def buggaBugga(color):
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
-                    marker_color=color,
+                    #marker_color=color,
                     name='Time values'))
     fig.add_trace(go.Scatter(x=[0,1,2], y=[np.average(level1Time),np.average(level2Time),np.average(level3Time)], 
                     name='Average time'))
@@ -140,7 +143,7 @@ def buggaBugga(color):
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
-                    marker_color=color,
+                    #marker_color=color,
                     name='Tries values'))
     fig.add_trace(go.Scatter(x=[0,1,2], y=[np.average(level1Tries),np.average(level2Tries),np.average(level3Tries)], 
                     name='Average Tries'))
@@ -171,6 +174,31 @@ def buggaBugga(color):
             go.Bar(y=notOptim, x=levelsNames, 
             name='Not optimal')])
     fig.update_layout(barmode='stack')
+    return fig
+
+@app.callback(
+    Output("graphTest", "figure"), 
+    Input("dropdown", "value"))
+def buggaBugga(color):
+    fig = go.Figure()
+    fig.add_trace(go.Box(y=tries, x=levels, # replace with your own data source
+                    boxpoints='all',
+                    pointpos=0,
+                    fillcolor='rgba(0,0,0,0.1)',
+                    name='Con Experiencia'))
+    fig.add_trace(go.Box(y=times, x=levels, # replace with your own data source
+                    boxpoints='all',
+                    pointpos=0,
+                    fillcolor='rgba(0,0,0,0.1)',
+                    name='Sin Experiencia'))
+    fig.update_xaxes(
+                    ticktext= levelsNames,
+                    tickvals=[0,1,2])
+
+    fig.update_layout(
+            yaxis_title='Duracion de los intentos',
+            boxmode='group' # group together boxes of the different traces for each value of x
+    )
     return fig
 
 app.run_server(debug=True)
