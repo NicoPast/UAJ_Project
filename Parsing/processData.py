@@ -1,4 +1,5 @@
 from email.utils import formatdate
+from sklearn.metrics import median_absolute_error
 from sqlalchemy import false
 from Parsing import hacerDiccionario,prettify
 from datetime import datetime
@@ -9,18 +10,10 @@ import csv
 #Clase que representa la info de un Nivel que ha realizado un Probador
 class levelInfo:
     tries=0
+    startTime=0
     playTime=0
+    levelWasCompleted=False
     codeLenght=0
-
-
-#Clase que recopila informacion sobre tiempo jugado en un nivel 
-class timeInfo:
-    levelName = ""
-    levelTime = 0   
-    def __init__(self,name,time):
-        self.levelName=name
-        self.levelTime=time
-
 
 #Clase que recopila la información de un probador 
 class Tester:
@@ -33,6 +26,42 @@ class Tester:
         self.programador=False
         self.infoLevels= dict()
 
+class Media:
+    contador = 0
+    acumulador=0
+
+    def __init__(self, cont, acum):
+        self.contador=cont
+        self.acumulador= acum
+
+
+
+
+def mediaIntentos(poblacion):
+    #Diccionario auxiliar para calcular las medias
+    mediasNiveles = dict()
+
+    #Recorremos cada individuo dentro de la poblacion
+    for individuo in poblacion:
+
+        #Para cada individuo miramos todos los niveles que este haya jugado
+        for nivelJugado in poblacion[individuo].infoLevels:
+            #En caso de que en nuestro diccionario auxiliar no exista este nivel lo añadimos con los datos del probador
+            if(not nivelJugado in mediasNiveles):            
+                mediasNiveles[nivelJugado] = Media(1, poblacion[individuo].infoLevels[nivelJugado].tries)
+            #Si sí existe añadimos 1 al número de personas que lo han jugado y añadimos el número de intentos que ha hecho este probador
+            else:
+                mediasNiveles[nivelJugado].contador = mediasNiveles[nivelJugado].contador+1
+                mediasNiveles[nivelJugado].acumulador += poblacion[individuo].infoLevels[nivelJugado].tries
+
+    #Para devolver los datos devolvemos otro diccionario en el que se tratan los datos que se han acumulado
+    medias = dict()
+    for clave in mediasNiveles:
+        medias[clave] = mediasNiveles[clave].acumulador / mediasNiveles[clave].contador
+    return medias
+
+
+
 
 def main():
 
@@ -44,14 +73,13 @@ def main():
     #Recorremos todas las personas de las trazas
     for nombreProbador in trazas.keys():
         Probadores[nombreProbador]= Tester()
-        duracionesNiveles = [] 
 
     #################################Número de intentos por nivel: sumar n de success + n de failed, por nivel #####################################
 
         #Niveles que ha completado correctamente
-        for succesfull in trazas[nombreProbador]["SuccessLevels"]:
-            nombreNivel = succesfull["object"]["id"]
-            timestamp = succesfull["timestamp"]
+        for initialized in trazas[nombreProbador]["InitializedLevels"]:
+            nombreNivel = initialized["object"]["id"]
+            timestamp = initialized["timestamp"]
             #En caso de que no tenga info sobre este nivel se la añadimos
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
@@ -61,9 +89,7 @@ def main():
             converted_timestamp=format_date.timestamp()
 
             #Aumentamos contador con el número de veces que se ha completado cada nivel
-            Probadores[nombreProbador].infoLevels[nombreNivel].tries =  Probadores[nombreProbador].infoLevels[nombreNivel].tries+1
-            duracionesNiveles.append(timeInfo(nombreNivel, converted_timestamp))
-
+            Probadores[nombreProbador].infoLevels[nombreNivel].startTime =  converted_timestamp
 
         #Recorremos los niveles en los que haya fallado
         for failed in trazas[nombreProbador]["FailedLevels"]:
@@ -79,7 +105,6 @@ def main():
 
             #Aumentamos contador con el número de veces que se ha completado cada nivel
             Probadores[nombreProbador].infoLevels[nombreNivel].tries =  Probadores[nombreProbador].infoLevels[nombreNivel].tries+1
-            duracionesNiveles.append(timeInfo(nombreNivel, converted_timestamp))
 
 
     ################################# Longitud del código  #####################################
@@ -100,18 +125,22 @@ def main():
                 instructions+=1
             Probadores[nombreProbador].infoLevels[nombreNivel].codeLenght = instructions 
 
+        #Niveles que ha completado correctamente
+        for succesfull in trazas[nombreProbador]["SuccessLevels"]:
+            nombreNivel = succesfull["object"]["id"]
+            timestamp = succesfull["timestamp"]
+            #En caso de que no tenga info sobre este nivel se la añadimos
+            if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
+                Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
 
-    ################################# Duracion de cada nivel #####################################
-    #Ordenar el array
-        # duracionesNiveles.sort(key=operator.attrgetter('levelTime'))
-        # pos = len(duracionesNiveles)-1
-        # nivelAAnalizar=""
-        # while pos != 0 and nivelAAnalizar != duracionesNiveles[0].levelName:
-        #     duracionNivelActual=0
-        #     nivelAAnalizar = duracionesNiveles[pos].levelName
-        #     while duracionesNiveles[pos-1].levelName == nivelAAnalizar:
-        #         duracionNivelActual+= Probadores[nombreProbador][nivelAAnalizar].playTime #calculo de parsear de string a numeros 
-        #         pos = pos-1
+            #Pasamos la fecha del evento a un timestamp util para nosotros
+            format_date = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f%z')
+            converted_timestamp=format_date.timestamp()
+
+            #Aumentamos contador con el número de veces que se ha completado cada nivel
+            Probadores[nombreProbador].infoLevels[nombreNivel].tries =  Probadores[nombreProbador].infoLevels[nombreNivel].tries+1
+            Probadores[nombreProbador].infoLevels[nombreNivel].playTime =  converted_timestamp - Probadores[nombreProbador].infoLevels[nombreNivel].startTime
+            Probadores[nombreProbador].infoLevels[nombreNivel].levelWasCompleted =  True
 
     #############Obtención de programadores o no programadores (estan en otro fichero)
     #Leemos el csv entero
@@ -130,7 +159,14 @@ def main():
         else:
             Probadores[datosCSV[pos][1]].programador = True
     
-    a = 0
+    
+####################
+    mediaIntentos(Probadores)
+
+
+
+
+
 
 main()
 
