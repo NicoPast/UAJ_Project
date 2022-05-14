@@ -2,6 +2,7 @@ from email.utils import formatdate
 from pytest import param
 from sklearn.metrics import median_absolute_error
 from sqlalchemy import false
+from sympy import O
 from Parsing import hacerDiccionario,prettify
 from datetime import datetime
 import xml.etree.ElementTree as ET
@@ -16,6 +17,8 @@ class levelInfo:
     levelWasCompleted=False
     noHints=False
     codeLength=0
+    codeOptimo=False
+    codeInFirstExecution=False
 
 #Clase que recopila la información de un probador 
 class Tester:
@@ -150,6 +153,8 @@ def main():
             Probadores[nombreProbador].infoLevels[nombreNivel].playTime =  timeToEpoch(timestamp) - Probadores[nombreProbador].infoLevels[nombreNivel].startTime
             Probadores[nombreProbador].infoLevels[nombreNivel].levelWasCompleted =  True
             Probadores[nombreProbador].infoLevels[nombreNivel].noHints =  succesfull["result"]["extensions"]["no_hints"]
+            Probadores[nombreProbador].infoLevels[nombreNivel].codeOptimo =  succesfull["result"]["extensions"]["minimum_steps"]
+            Probadores[nombreProbador].infoLevels[nombreNivel].codeInFirstExecution =  succesfull["result"]["extensions"]["first_execution"]
 
     #############Obtención datos específicos de cada alumno (Programador/NoProgramador, Género)
     #Leemos el csv entero
