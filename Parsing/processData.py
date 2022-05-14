@@ -1,4 +1,5 @@
 from email.utils import formatdate
+from pytest import param
 from sklearn.metrics import median_absolute_error
 from sqlalchemy import false
 from Parsing import hacerDiccionario,prettify
@@ -13,12 +14,14 @@ class levelInfo:
     startTime=0
     playTime=0
     levelWasCompleted=False
-    codeLenght=0
+    noHints=False
+    codeLength=0
 
 #Clase que recopila la información de un probador 
 class Tester:
     #Si ha recibido clases de programacion o no
     programador = False
+    genero = "Otro"
     #Diccionario que tiene una entrada por nivel jugado con informacion de su desempeño en cada uno
     infoLevels = dict()
 
@@ -26,6 +29,7 @@ class Tester:
         self.programador=False
         self.infoLevels= dict()
 
+#Clase auxiliar para sacar medias
 class Media:
     contador = 0
     acumulador=0
@@ -35,24 +39,36 @@ class Media:
         self.acumulador= acum
 
 
+##Este método tiene como objetivo tomar la población y seleccionar aquellos individuos cuyo parámetro especificado sea igual al valor dado
+#El método devuelve la sección de la población que cumple con dichos requisitos
+def separarAlumnos(poblacion,parametro,  valor):
+    result = dict()
+    for elem in poblacion:
+        if(getattr(poblacion[elem],parametro) == valor):
+            result[elem] = poblacion[elem]
 
+    return result
 
-def mediaIntentos(poblacion):
+#Metodo que toma una poblacion que ha jugado una serie de niveles y calcula la media a partir del nombre 
+# de un parámetro que se pasa teniendo en cuenta si es necesario o no que el usuario haya completado el nivel
+def mediaSegunParametro(poblacion, parametro, soloNivelesCompletados):
     #Diccionario auxiliar para calcular las medias
     mediasNiveles = dict()
 
     #Recorremos cada individuo dentro de la poblacion
     for individuo in poblacion:
-
         #Para cada individuo miramos todos los niveles que este haya jugado
         for nivelJugado in poblacion[individuo].infoLevels:
-            #En caso de que en nuestro diccionario auxiliar no exista este nivel lo añadimos con los datos del probador
-            if(not nivelJugado in mediasNiveles):            
-                mediasNiveles[nivelJugado] = Media(1, poblacion[individuo].infoLevels[nivelJugado].tries)
+
+            #En caso de que en nuestro diccionario auxiliar no exista este nivel lo añadimos dependiendo de si es necesario que el probador haya completado el nivel o no
+            levelCompleted = poblacion[individuo].infoLevels[nivelJugado].levelWasCompleted
+            if(not nivelJugado in mediasNiveles and ((levelCompleted and soloNivelesCompletados) or (not soloNivelesCompletados))):            
+                mediasNiveles[nivelJugado] = Media(1, getattr(poblacion[individuo].infoLevels[nivelJugado],parametro))
+
             #Si sí existe añadimos 1 al número de personas que lo han jugado y añadimos el número de intentos que ha hecho este probador
-            else:
+            elif ((levelCompleted and soloNivelesCompletados) or (not soloNivelesCompletados)):
                 mediasNiveles[nivelJugado].contador = mediasNiveles[nivelJugado].contador+1
-                mediasNiveles[nivelJugado].acumulador += poblacion[individuo].infoLevels[nivelJugado].tries
+                mediasNiveles[nivelJugado].acumulador += getattr(poblacion[individuo].infoLevels[nivelJugado],parametro)
 
     #Para devolver los datos devolvemos otro diccionario en el que se tratan los datos que se han acumulado
     medias = dict()
@@ -61,7 +77,11 @@ def mediaIntentos(poblacion):
     return medias
 
 
-
+#MEtodo para transformar las fechas almacenadas en las trazas a timestaps EPOCH
+def timeToEpoch(date):
+    format_date = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f%z')
+    converted_timestamp=format_date.timestamp()
+    return converted_timestamp
 
 def main():
 
@@ -84,24 +104,15 @@ def main():
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
 
-            #Pasamos la fecha del evento a un timestamp util para nosotros
-            format_date = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f%z')
-            converted_timestamp=format_date.timestamp()
-
             #Aumentamos contador con el número de veces que se ha completado cada nivel
-            Probadores[nombreProbador].infoLevels[nombreNivel].startTime =  converted_timestamp
+            Probadores[nombreProbador].infoLevels[nombreNivel].startTime = timeToEpoch(timestamp)
 
         #Recorremos los niveles en los que haya fallado
         for failed in trazas[nombreProbador]["FailedLevels"]:
             nombreNivel = failed["object"]["id"]
-            timestamp = failed["timestamp"]
             #En caso de que no tenga info sobre este nivel se la añadimos
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
-
-            #Pasamos la fecha del evento a un timestamp util para nosotros
-            format_date = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f%z')
-            converted_timestamp=format_date.timestamp()
 
             #Aumentamos contador con el número de veces que se ha completado cada nivel
             Probadores[nombreProbador].infoLevels[nombreNivel].tries =  Probadores[nombreProbador].infoLevels[nombreNivel].tries+1
@@ -110,22 +121,23 @@ def main():
     ################################# Longitud del código  #####################################
         #Por cada nivel jugado miramos el codigo que mandó y contamos los bloques que lo forman
         for intento in trazas[nombreProbador]["LevelTries"]:
-            nombreNivel = intento["object"]["id"]
-
             #En caso de que no tenga info sobre este nivel se la añadimos
+            nombreNivel = intento["object"]["id"]
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
 
             #Obtenemos el codigo de la ultima vez que se ejecutó el nivel y calculamos su longitud
             codigo = intento["result"]["extensions"]["code"]
             xml= ET.ElementTree(ET.fromstring(codigo))
+
             #Por cada aparicion del bloque 'block' aumentamos el contador de instrucciones
             instructions=0
             for block in xml.iter('block'):
                 instructions+=1
-            Probadores[nombreProbador].infoLevels[nombreNivel].codeLenght = instructions 
 
-        #Niveles que ha completado correctamente
+            Probadores[nombreProbador].infoLevels[nombreNivel].codeLength = instructions 
+
+        #Toma del momento en el que un jugador ha completado un nivel y cálculo del tiempo que ha tardado en completarlo
         for succesfull in trazas[nombreProbador]["SuccessLevels"]:
             nombreNivel = succesfull["object"]["id"]
             timestamp = succesfull["timestamp"]
@@ -133,16 +145,13 @@ def main():
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
 
-            #Pasamos la fecha del evento a un timestamp util para nosotros
-            format_date = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f%z')
-            converted_timestamp=format_date.timestamp()
-
             #Aumentamos contador con el número de veces que se ha completado cada nivel
             Probadores[nombreProbador].infoLevels[nombreNivel].tries =  Probadores[nombreProbador].infoLevels[nombreNivel].tries+1
-            Probadores[nombreProbador].infoLevels[nombreNivel].playTime =  converted_timestamp - Probadores[nombreProbador].infoLevels[nombreNivel].startTime
+            Probadores[nombreProbador].infoLevels[nombreNivel].playTime =  timeToEpoch(timestamp) - Probadores[nombreProbador].infoLevels[nombreNivel].startTime
             Probadores[nombreProbador].infoLevels[nombreNivel].levelWasCompleted =  True
+            Probadores[nombreProbador].infoLevels[nombreNivel].noHints =  succesfull["result"]["extensions"]["no_hints"]
 
-    #############Obtención de programadores o no programadores (estan en otro fichero)
+    #############Obtención datos específicos de cada alumno (Programador/NoProgramador, Género)
     #Leemos el csv entero
     datosCSV=[]
     with open('results-survey945759.csv', 'r') as file:
@@ -152,8 +161,10 @@ def main():
             datosCSV.append(each_row)
 
     columnaProgramacion = 5
+    columnaGenero = 8
     #Sacar quien es programador o no de todos los probadores
     for pos in range(1,len(datosCSV)):
+        Probadores[datosCSV[pos][1]].genero = datosCSV[pos][columnaGenero]
         if datosCSV[pos][columnaProgramacion] == "No":
             Probadores[datosCSV[pos][1]].programador = False
         else:
@@ -161,10 +172,12 @@ def main():
     
     
 ####################
-    mediaIntentos(Probadores)
 
-
-
+    poblacionAAnalizar = separarAlumnos(Probadores,"programador", False)
+    #Media de intentos que se han hecho en cada nivel
+    mediaSegunParametro(Probadores,"tries",False )
+    mediaSegunParametro(Probadores,"playTime",True )
+    mediaSegunParametro(Probadores,"codeLength",True )
 
 
 
