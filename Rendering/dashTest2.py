@@ -35,170 +35,339 @@ datExample = '''{[
 ]}'''
 
 size = 100
-numLevels = 3
+numLevels = 5
 
-levels = np.append(np.append(np.zeros(size), np.ones(size)), np.ones(size) + 1)
-levelsNames = ["Level 1", "Level 2", "Level 3"]
+levelsNames = ["Level " + str(i + 1) for i in range(numLevels)]
 
-level1Time = np.random.uniform(low=5, high=15, size=(size,))
-level2Time = np.random.uniform(low=10, high=25, size=(size,))
-level3Time = np.random.uniform(low=10, high=55, size=(size,))
-times = np.append(np.append(level1Time, level2Time), level3Time)
+vals = [i for i in range(numLevels)]
 
-level1Tries = np.random.randint(low=15, high=30, size=(size,))
-level2Tries = np.random.randint(low=3, high=25, size=(size,))
-level3Tries = np.random.randint(low=40, high=70, size=(size,))
-tries = np.append(np.append(level1Tries, level2Tries), level3Tries)
+factor = 1/(numLevels*2)
+startPoint = factor * numLevels/2
 
-level1Help = np.sum(np.random.choice(a=[True, False], size=(size,), p=[0.2, 0.8]))
-level2Help = np.sum(np.random.choice(a=[True, False], size=(size,), p=[0.5, 0.5]))
-level3Help = np.sum(np.random.choice(a=[True, False], size=(size,), p=[0.7, 0.3]))
+helps = []
+helpsNoExp = []
+helpsExp = []
+notHelps = []
+notHelpsNoExp = []
+notHelpsExp = []
+optim = []
+optimNoExp = []
+optimExp = []
+notOptim = []
+notOptimNoExp = []
+notOptimExp = []
 
-helps = [level1Help, level2Help, level3Help]
-notHelps = [size - level1Help, size - level2Help, size - level3Help]
+levels = None
+times = None
+timesExp = None
+timesNoExp = None
+tries = None
+triesExp = None
+triesNoExp = None
+codeLength = None
+codeLengthExp = None
+codeLengthNoExp = None
 
-level1Optim = np.sum(np.random.choice(a=[True, False], size=(size,), p=[0.8, 0.2]))
-level2Optim = np.sum(np.random.choice(a=[True, False], size=(size,), p=[0.5, 0.5]))
-level3Optim = np.sum(np.random.choice(a=[True, False], size=(size,), p=[0.3, 0.7]))
+for i in range(numLevels):
 
-optim = [level1Optim, level2Optim, level3Optim]
-notOptim = [size - level1Optim, size - level2Optim, size - level3Optim]
+    levels = np.append(levels,np.zeros(size) + i)
+    times = np.append(times, np.random.uniform(
+        low=10 + 3*i, high=20 + 3*i, size=(size,)))
+    timesExp = np.append(timesExp, np.random.uniform(
+        low=5 + i, high=30 + i, size=(size,)))
+    timesNoExp = np.append(timesNoExp, np.random.uniform(
+        low=10 + 5 * i, high=30 + 5 * i, size=(size,)))
+
+    tries = np.append(tries, np.random.randint(
+        low=5 + 2 * i, high=30 + 2 * i, size=(size,)))
+    triesExp = np.append(triesExp, np.random.randint(
+        low=5 + i, high=25 + i, size=(size,)))
+    triesNoExp = np.append(triesNoExp, np.random.randint(
+        low=8 + 5 * i, high=30 + 5 * i, size=(size,)))
+
+    codeLength = np.append(codeLength, np.random.randint(
+        low=10 + 2 * i, high=40 + 2 * i, size=(size,)))
+    codeLengthExp = np.append(codeLengthExp, np.random.randint(
+        low=7 + i, high=25 + i, size=(size,)))
+    codeLengthNoExp = np.append(codeLengthNoExp, np.random.randint(
+        low=10 + 5 * i, high=30 + 5 * i, size=(size,)))
+
+    helps.append(np.sum(np.random.choice(
+        a=[True, False], size=(size,), p=[startPoint + factor * i, 1 - (startPoint + factor * i)]
+    )))
+    notHelps.append(size - helps[i])
+
+    helpsNoExp.append(np.sum(np.random.choice(
+        a=[True, False], size=(size,), p=[startPoint + factor * i, 1 - (startPoint + factor * i)]
+    )))
+    notHelpsNoExp.append(size - helpsNoExp[i])
+
+    helpsExp.append(np.sum(np.random.choice(
+        a=[True, False], size=(size,), p=[startPoint + factor * i, 1 - (startPoint + factor * i)]
+    )))
+    notHelpsExp.append(size - helpsExp[i])
+
+    optim.append(np.sum(np.random.choice(
+        a=[True, False], size=(size,), p=[1 - (startPoint + factor * i), startPoint + factor * i]
+    )))
+    notOptim.append(size - optim[i])
+
+    optimNoExp.append(np.sum(np.random.choice(
+        a=[True, False], size=(size,), p=[1 - (startPoint + factor * i), startPoint + factor * i]
+    )))
+    notOptimNoExp.append(size - optimNoExp[i])
+
+    optimExp.append(np.sum(np.random.choice(
+        a=[True, False], size=(size,), p=[1 - (startPoint + factor * i), startPoint + factor * i]
+    )))
+    notOptimExp.append(size - optimExp[i]) 
+
+
+levels = levels[1:]
+times = times[1:]
+timesExp = timesExp[1:]
+timesNoExp = timesNoExp[1:]
+tries = tries[1:]
+triesExp = triesExp[1:]
+triesNoExp = triesNoExp[1:]
+codeLength = codeLength[1:]
+codeLengthExp = codeLengthExp[1:]
+codeLengthNoExp = codeLengthNoExp[1:]
 
 app.layout = html.Div([
-    html.H4('Interactive color selection with simple Dash example'),
-    html.P("Select color:"),
+
+    html.H1('Titulo de la investigación', style={'font-size': '70px'}),
+    html.P('En este proyecto, se tiene como objetivo realizar un análisis de usabilidad sobre el TFG de uno de los integrantes del grupo. Dicho TFG consiste en el desarrollo de un juego serio cuyo objetivo es la enseñanza de conceptos de Computational Thinking y nuestro objetivo es realizar pruebas sobre usuarios que nunca han estado en contacto con el proyecto'),
+    html.H1('Curva de aprendizaje', style={'font-size': '50px'}),
+    dcc.Graph(id="graphTime", style={'height': '800px'}),
+    dcc.Graph(id="graphTries", style={'height': '800px'}),
+    dcc.Graph(id="graphCodeLength", style={'height': '800px'}),
+    dcc.Graph(id="graphHelp", style={'height': '800px'}),
+    dcc.Graph(id="graphOptim", style={'height': '800px'}),
+    html.H1('Comparativa de experiencia previa', style={'font-size': '50px'}),
+    dcc.Graph(id="graphTimeCompare", style={'height': '800px'}),
+    dcc.Graph(id="graphTriesCompare", style={'height': '800px'}),
+    dcc.Graph(id="graphHelpCompare", style={'height': '800px'}),
+
+
     dcc.Dropdown(
         id="dropdown",
         options=['Gold', 'MediumTurquoise', 'LightGreen', 'DarkGrey'],
         value='Gold',
         clearable=False,
-    ),
-    #dcc.Graph(id="graph"),
-    #dcc.Graph(id="graph2"),
-    #dcc.Graph(id="graphTime1"),
-    dcc.Graph(id="graphTime", style={'height':'1000px'}),
-    dcc.Graph(id="graphTries", style={'height':'1000px'}),
-    dcc.Graph(id="graphHelp", style={'width': '90vh', 'height':'800px'}),
-    dcc.Graph(id="graphOptim", style={'width': '90vh', 'height':'800px'}),
-    dcc.Graph(id="graphTest", style={'height':'1000px'}),
+    )
 
-])
+], style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'})
 
-# @app.callback(
-#     Output("graph", "figure"), 
-#     Input("dropdown", "value"))
-# def buggaBugga(color):
-#     fig = go.Figure(
-#         data=go.Bar(y=numLanguages, x=names, # replace with your own data source
-#                     marker_color=color))
-#     return fig
-
-# @app.callback(
-#     Output("graph2", "figure"), 
-#     Input("dropdown", "value"))
-# def buggaBugga(color):
-#     fig = go.Figure(
-#         data=go.Box(y=ages, x=names, # replace with your own data source
-#                     marker_color=color))
-#     return fig
-
-# @app.callback(
-#     Output("graphTime1", "figure"), 
-#     Input("dropdown", "value"))
-# def buggaBugga(color):
-#     fig = go.Figure(
-#         data=go.Scatter(y=times, x=levels, # replace with your own data source
-                    
-#                     mode='markers',
-#                     marker_color=color,
-#                     name='Time values'))
-#     fig.add_trace(go.Scatter(x=[0,1,2], y=[np.average(level1Time),np.average(level2Time),np.average(level3Time)], 
-#                     name='Average time'))
-#     return fig
 
 @app.callback(
-    Output("graphTime", "figure"), 
+    Output("graphTime", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(
-        data=go.Box(y=times, x=levels, # replace with your own data source
+        data=go.Box(y=times, x=levels,  # replace with your own data source
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
-                    #marker_color=color,
-                    name='Time values'))
-    fig.add_trace(go.Scatter(x=[0,1,2], y=[np.average(level1Time),np.average(level2Time),np.average(level3Time)], 
-                    name='Average time'))
+                    # marker_color=color,
+                    name='Time values'),
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Tiempo dedicado'
+            )
+        ))
+
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(times[size*i:size*(i+1)]) for i in range(numLevels)], name='Average time'))
+
     fig.update_xaxes(
-                    ticktext= levelsNames,
-                    tickvals=[0,1,2])
+        ticktext=levelsNames,
+        tickvals=vals)
+    fig.update_yaxes(title="Tiempo")
     return fig
 
+
 @app.callback(
-    Output("graphTries", "figure"), 
+    Output("graphTries", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(
-        data=go.Box(y=tries, x=levels, # replace with your own data source
+        data=go.Box(y=tries, x=levels,  # replace with your own data source
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
-                    #marker_color=color,
-                    name='Tries values'))
-    fig.add_trace(go.Scatter(x=[0,1,2], y=[np.average(level1Tries),np.average(level2Tries),np.average(level3Tries)], 
-                    name='Average Tries'))
+                    # marker_color=color,
+                    name='Tries values'),
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Intentos por nivel'
+            )
+        ))
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(tries[size*i:size*(i+1)]) for i in range(numLevels)],
+                             name='Average Tries'))
     fig.update_xaxes(
-                    ticktext= levelsNames,
-                    tickvals=[0,1,2])
+        ticktext=levelsNames,
+        tickvals=vals)
+    fig.update_yaxes(title="Intentos")
     return fig
 
+
 @app.callback(
-    Output("graphHelp", "figure"), 
+    Output("graphCodeLength", "figure"),
+    Input("dropdown", "value"))
+def buggaBugga(color):
+    fig = go.Figure(
+        data=go.Box(y=codeLength, x=levels,  # replace with your own data source
+                    boxpoints='all',
+                    pointpos=0,
+                    fillcolor='rgba(0,0,0,0.1)',
+                    # marker_color=color,
+                    name='Tries values'),
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Longitud del código'
+            )
+        ))
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(codeLength[size*i:size*(i+1)]) for i in range(numLevels)],
+                             name='Average Tries'))
+    fig.update_xaxes(
+        ticktext=levelsNames,
+        tickvals=vals)
+
+    fig.update_yaxes(title="Longitud")
+    return fig
+
+
+@app.callback(
+    Output("graphHelp", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(data=[
-            go.Bar(y=helps, x=levelsNames, # replace with your own data source
-            name='Helped'),
-            go.Bar(y=notHelps, x=levelsNames, 
-            name='Not helped')])
+        go.Bar(y=helps, x=levelsNames,  # replace with your own data source
+               name='Helped'),
+        go.Bar(y=notHelps, x=levelsNames,
+               name='Not helped')],
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Numero de Ayudas utilizadas'
+            )
+    ))
     fig.update_layout(barmode='stack')
+    fig.update_yaxes(title="% Sujetos")
     return fig
 
+
 @app.callback(
-    Output("graphOptim", "figure"), 
+    Output("graphOptim", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(data=[
-            go.Bar(y=optim, x=levelsNames, # replace with your own data source
-            name='Optimal solution'),
-            go.Bar(y=notOptim, x=levelsNames, 
-            name='Not optimal')])
+        go.Bar(y=optim, x=levelsNames,  # replace with your own data source
+               name='Optimal solution'),
+        go.Bar(y=notOptim, x=levelsNames,
+               name='Not optimal')],
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Soluciones óptimas'
+            )
+    ))
     fig.update_layout(barmode='stack')
+    fig.update_yaxes(title="% Sujetos")
     return fig
 
+
 @app.callback(
-    Output("graphTest", "figure"), 
+    Output("graphTimeCompare", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
-    fig = go.Figure()
-    fig.add_trace(go.Box(y=tries, x=levels, # replace with your own data source
-                    boxpoints='all',
-                    pointpos=0,
-                    fillcolor='rgba(0,0,0,0.1)',
-                    name='Con Experiencia'))
-    fig.add_trace(go.Box(y=times, x=levels, # replace with your own data source
-                    boxpoints='all',
-                    pointpos=0,
-                    fillcolor='rgba(0,0,0,0.1)',
-                    name='Sin Experiencia'))
+    fig = go.Figure(
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Tiempo dedicado'
+            )
+        ))
+    fig.add_trace(go.Box(y=timesNoExp, x=levels,  # replace with your own data source
+                         boxpoints='all',
+                         pointpos=0,
+                         fillcolor='rgba(0,0,0,0.1)',
+                         name='Sin Experiencia'))
+    fig.add_trace(go.Box(y=timesExp, x=levels,  # replace with your own data source
+                         boxpoints='all',
+                         pointpos=0,
+                         fillcolor='rgba(0,0,0,0.1)',
+                         name='Con Experiencia'))
     fig.update_xaxes(
-                    ticktext= levelsNames,
-                    tickvals=[0,1,2])
+        ticktext=levelsNames,
+        tickvals=vals)
 
     fig.update_layout(
-            yaxis_title='Duracion de los intentos',
-            boxmode='group' # group together boxes of the different traces for each value of x
+        yaxis_title='Tiempo',
+        boxmode='group'  # group together boxes of the different traces for each value of x
     )
     return fig
+
+
+@app.callback(
+    Output("graphTriesCompare", "figure"),
+    Input("dropdown", "value"))
+def buggaBugga(color):
+    fig = go.Figure(
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Intentos por nivel'
+            )
+        ))
+    fig.add_trace(go.Box(y=triesNoExp, x=levels,  # replace with your own data source
+                         boxpoints='all',
+                         pointpos=0,
+                         fillcolor='rgba(0,0,0,0.1)',
+                         name='Sin Experiencia'))
+    fig.add_trace(go.Box(y=triesExp, x=levels,  # replace with your own data source
+                         boxpoints='all',
+                         pointpos=0,
+                         fillcolor='rgba(0,0,0,0.1)',
+                         name='Con Experiencia'))
+    fig.update_xaxes(
+        ticktext=levelsNames,
+        tickvals=vals)
+
+    fig.update_layout(
+        yaxis_title='Intentos',
+        boxmode='group'  # group together boxes of the different traces for each value of x
+    )
+    return fig
+
+
+@app.callback(
+    Output("graphHelpCompare", "figure"),
+    Input("dropdown", "value"))
+def buggaBugga(color):
+    fig = go.Figure(
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Longitud del Codigo'
+            )
+        ))
+
+    fig.add_trace(go.Box(y=codeLengthNoExp, x=levels,  # replace with your own data source
+                         boxpoints='all',
+                         pointpos=0,
+                         fillcolor='rgba(0,0,0,0.1)',
+                         name='Sin Experiencia'))
+    fig.add_trace(go.Box(y=codeLengthExp, x=levels,  # replace with your own data source
+                         boxpoints='all',
+                         pointpos=0,
+                         fillcolor='rgba(0,0,0,0.1)',
+                         name='Con Experiencia'))
+
+    fig.update_xaxes(
+        ticktext=levelsNames,
+        tickvals=vals)
+
+    fig.update_layout(
+        yaxis_title ='Longitud',
+        boxmode='group'  # group together boxes of the different traces for each value of x
+    )
+    return fig
+
 
 app.run_server(debug=True)
