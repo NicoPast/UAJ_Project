@@ -140,12 +140,12 @@ app.layout = html.Div([
     dcc.Graph(id="graphHelpCompare", style={'height': '800px'}),
     dcc.Graph(id="graphOptimCompare", style={'height': '800px'}),
 
-
     dcc.Dropdown(
         id="dropdown",
         options=['Gold', 'MediumTurquoise', 'LightGreen', 'DarkGrey'],
         value='Gold',
         clearable=False,
+        style={'display': 'none'}
     )
 
 ], style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'})
