@@ -34,8 +34,8 @@ datExample = '''{[
     {"userID": "2", "level1-Time": 8, "level2-Time": 17, "level3-Time": 42},
 ]}'''
 
-size = 100
-numLevels = 5
+size = np.random.randint(low=50, high=200)
+numLevels = np.random.randint(low=3, high=15)
 
 levelsNames = ["Level " + str(i + 1) for i in range(numLevels)]
 
@@ -57,16 +57,16 @@ notOptim = []
 notOptimNoExp = []
 notOptimExp = []
 
-levels = None
-times = None
-timesExp = None
-timesNoExp = None
-tries = None
-triesExp = None
-triesNoExp = None
-codeLength = None
-codeLengthExp = None
-codeLengthNoExp = None
+levels = np.empty(0)
+times = np.empty(0)
+timesExp = np.empty(0)
+timesNoExp = np.empty(0)
+tries = np.empty(0)
+triesExp = np.empty(0)
+triesNoExp = np.empty(0)
+codeLength = np.empty(0)
+codeLengthExp = np.empty(0)
+codeLengthNoExp = np.empty(0)
 
 for i in range(numLevels):
 
@@ -123,17 +123,6 @@ for i in range(numLevels):
     notOptimExp.append(size - optimExp[i]) 
 
 
-levels = levels[1:]
-times = times[1:]
-timesExp = timesExp[1:]
-timesNoExp = timesNoExp[1:]
-tries = tries[1:]
-triesExp = triesExp[1:]
-triesNoExp = triesNoExp[1:]
-codeLength = codeLength[1:]
-codeLengthExp = codeLengthExp[1:]
-codeLengthNoExp = codeLengthNoExp[1:]
-
 app.layout = html.Div([
 
     html.H1('Titulo de la investigación', style={'font-size': '70px'}),
@@ -147,7 +136,9 @@ app.layout = html.Div([
     html.H1('Comparativa de experiencia previa', style={'font-size': '50px'}),
     dcc.Graph(id="graphTimeCompare", style={'height': '800px'}),
     dcc.Graph(id="graphTriesCompare", style={'height': '800px'}),
+    dcc.Graph(id="graphCodeLengthCompare", style={'height': '800px'}),
     dcc.Graph(id="graphHelpCompare", style={'height': '800px'}),
+    dcc.Graph(id="graphOptimCompare", style={'height': '800px'}),
 
 
     dcc.Dropdown(
@@ -252,7 +243,7 @@ def buggaBugga(color):
             )
     ))
     fig.update_layout(barmode='stack')
-    fig.update_yaxes(title="% Sujetos")
+    fig.update_yaxes(title="Usuarios")
     return fig
 
 
@@ -271,7 +262,7 @@ def buggaBugga(color):
             )
     ))
     fig.update_layout(barmode='stack')
-    fig.update_yaxes(title="% Sujetos")
+    fig.update_yaxes(title="Usuarios")
     return fig
 
 
@@ -338,7 +329,7 @@ def buggaBugga(color):
 
 
 @app.callback(
-    Output("graphHelpCompare", "figure"),
+    Output("graphCodeLengthCompare", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(
@@ -368,6 +359,59 @@ def buggaBugga(color):
         boxmode='group'  # group together boxes of the different traces for each value of x
     )
     return fig
+
+
+@app.callback(
+    Output("graphHelpCompare", "figure"),
+    Input("dropdown", "value"))
+def buggaBugga(color):
+    fig = go.Figure(data=[
+        go.Bar(y=helps, x=levelsNames,  # replace with your own data source
+               name='Helped'),
+        go.Bar(y=notHelps, x=levelsNames,
+               name='Not helped')],
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Numero de Ayudas utilizadas'
+            )
+    ))
+    fig.update_layout(barmode='stack')
+    fig.update_yaxes(title="Usuarios")
+    return fig
+
+
+@app.callback(
+    Output("graphOptimCompare", "figure"),
+    Input("dropdown", "value"))
+def buggaBugga(color):
+    fig = go.Figure(
+        layout=go.Layout(
+            title=go.layout.Title(
+                text='Soluciones óptimas'
+            )
+    ))
+
+
+    data =  [optimExp, notOptimExp, optimNoExp, notOptimNoExp]
+    names =  ["Optimo", "No Optimo"]
+
+    for i in range(len(data)):
+    ## put var1 and var2 together on the first subgrouped bar
+        if i <= 1:
+            fig.add_trace(
+                go.Bar(x=[levelsNames, ['Sin Experiencia']*len(levels)], y=data[i], name=names[i%2]),
+            )
+        ## put var3 and var4 together on the first subgrouped bar
+        else:
+            fig.add_trace(
+                go.Bar(x=[levelsNames, ['Con Experiencia']*len(levels)], y= data[i], name=names[i%2]),
+            )
+
+
+    fig.update_layout(barmode='stack')
+    fig.update_yaxes(title="Usuarios")
+    return fig
+
 
 
 app.run_server(debug=True)
