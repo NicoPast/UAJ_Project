@@ -35,95 +35,80 @@ datExample = '''{[
     {"userID": "2", "level1-Time": 8, "level2-Time": 17, "level3-Time": 42},
 ]}'''
 
+#Poblacion involucrada en las pruebas
 Probadores=getProbadores()
+
+#Pedimos los datos generales de todos los probadores
 NivelesGeneral=agruparProbadores(Probadores)
-levelsNames = NivelesGeneral.keys()
 
-size = len(Probadores)
+#Pedirmos los datos de solamente aquellos probadores que tengan experiencia en la programación
+NivelesExperiencia = agruparProbadores(separarProbadores(Probadores,"programador",True))
+
+#Pedimos los datos de aquellos probadores que no tengan experiencia en la programación
+NivelesSinExperiencia = agruparProbadores(separarProbadores(Probadores,"programador",False))
+
+#Nombre de cada uno de los niveles que se han probado
+levelsNames = np.array(list(NivelesGeneral.keys()))
 numLevels = len(levelsNames)
-
-
 vals = [i for i in range(numLevels)]
 
-factor = 1/(numLevels*2)
-startPoint = factor * numLevels/2
 
-helps = []
-helpsNoExp = []
-helpsExp = []
-notHelps = []
-notHelpsNoExp = []
-notHelpsExp = []
-optim = []
-optimNoExp = []
-optimExp = []
-notOptim = []
-notOptimNoExp = []
-notOptimExp = []
+#Variables involucradas en obtener los datos de todos los usuarios
+playTime = []
+intentos = []
+longCodigo = []
+sinAyudas = []
+solOptima = []
+for i in range(len(NivelesGeneral)):
+    playTime.append(np.array(list(NivelesGeneral.values())[i]['playTime']))
+    intentos.append(np.array(list(NivelesGeneral.values())[i]['tries']))
+    longCodigo.append(np.array(list(NivelesGeneral.values())[i]['codeLength']))
+    sinAyudas.append(np.array(list(NivelesGeneral.values())[i]['noHints']))
+    solOptima.append(np.array(list(NivelesGeneral.values())[i]['codeOptimo']))
 
-levels = np.empty(0)
-times = list()
-timesExp = np.empty(0)
-timesNoExp = np.empty(0)
-tries = np.empty(0)
-triesExp = np.empty(0)
-triesNoExp = np.empty(0)
-codeLength = np.empty(0)
-codeLengthExp = np.empty(0)
-codeLengthNoExp = np.empty(0)
+#Variables involucradas en obtener los datos solo de los usuarios con experiencia en la programación
+playTimeExperimentados = []
+intentosExperimentados = []
+longCodigoExperimentados = []
+sinAyudasExperimentados = []
+solOptimaExperimentados = []
+for i in range(len(NivelesExperiencia)):
+    playTimeExperimentados.append(np.array(list(NivelesExperiencia.values())[i]['playTime']))
+    intentosExperimentados.append(np.array(list(NivelesExperiencia.values())[i]['tries']))
+    longCodigoExperimentados.append(np.array(list(NivelesExperiencia.values())[i]['codeLength']))
+    sinAyudasExperimentados.append(np.array(list(NivelesExperiencia.values())[i]['noHints']))
+    solOptimaExperimentados.append(np.array(list(NivelesExperiencia.values())[i]['codeOptimo']))
 
-for i in range(numLevels):
+#Variables involucradas en obtener los datos solo de los usuarios que no experiencia en la programación
+playTimeNoExperimentados = []
+intentosNoExperimentados = []
+longCodigoNoExperimentados = []
+sinAyudasNoExperimentados = []
+solOptimaNoExperimentados = []
+for i in range(len(NivelesSinExperiencia)):
+    playTimeNoExperimentados.append(np.array(list(NivelesSinExperiencia.values())[i]['playTime']))
+    intentosNoExperimentados.append(np.array(list(NivelesSinExperiencia.values())[i]['tries']))
+    longCodigoNoExperimentados.append(np.array(list(NivelesSinExperiencia.values())[i]['codeLength']))
+    sinAyudasNoExperimentados.append(np.array(list(NivelesSinExperiencia.values())[i]['noHints']))
+    solOptimaNoExperimentados.append(np.array(list(NivelesSinExperiencia.values())[i]['codeOptimo']))
 
-    levels = np.append(levels,np.zeros(size) + i)
-    times.append(np.array(list(NivelesGeneral.values())[i]['playTime']))
-    timesExp = np.append(timesExp, np.random.uniform(
-        low=5 + i, high=30 + i, size=(size,)))
-    timesNoExp = np.append(timesNoExp, np.random.uniform(
-        low=10 + 5 * i, high=30 + 5 * i, size=(size,)))
 
-    tries = np.append(tries,np.array(list(NivelesGeneral.values())[i]['tries']))
-    triesExp = np.append(triesExp, np.random.randint(
-        low=5 + i, high=25 + i, size=(size,)))
-    triesNoExp = np.append(triesNoExp, np.random.randint(
-        low=8 + 5 * i, high=30 + 5 * i, size=(size,)))
 
-    codeLength = np.append(codeLength,np.array(list(NivelesGeneral.values())[i]['codeLength']))
-    codeLengthExp = np.append(codeLengthExp, np.random.randint(
-        low=7 + i, high=25 + i, size=(size,)))
-    codeLengthNoExp = np.append(codeLengthNoExp, np.random.randint(
-        low=10 + 5 * i, high=30 + 5 * i, size=(size,)))
-
-    helps.append(np.sum(np.random.choice(
-        a=[True, False], size=(size,), p=[startPoint + factor * i, 1 - (startPoint + factor * i)]
-    )))
-    notHelps.append(size - helps[i])
-
-    helpsNoExp.append(np.sum(np.random.choice(
-        a=[True, False], size=(size,), p=[startPoint + factor * i, 1 - (startPoint + factor * i)]
-    )))
-    notHelpsNoExp.append(size - helpsNoExp[i])
-
-    helpsExp.append(np.sum(np.random.choice(
-        a=[True, False], size=(size,), p=[startPoint + factor * i, 1 - (startPoint + factor * i)]
-    )))
-    notHelpsExp.append(size - helpsExp[i])
-
-    optim.append(np.sum(np.array(list(NivelesGeneral.values())[i]['codeOptimo'])))
-    notOptim.append(size - optim[i])
-
-    optimNoExp.append(np.sum(np.random.choice(
-        a=[True, False], size=(size,), p=[1 - (startPoint + factor * i), startPoint + factor * i]
-    )))
-    notOptimNoExp.append(size - optimNoExp[i])
-
-    optimExp.append(np.sum(np.random.choice(
-        a=[True, False], size=(size,), p=[1 - (startPoint + factor * i), startPoint + factor * i]
-    )))
-    notOptimExp.append(size - optimExp[i]) 
+#Metodo que recibe un array de arrays y a partir de cada elemetos de los subarrays genera unas coordenadas dependiendo de en qué subarray se encuentre cada elemento
+def sacarCoordenadas(valores):
+    coordenadasX= np.array([])
+    coordenadasY = np.array([])
+    i =0
+    for elem in valores:
+        
+        for value in elem:
+            coordenadasX = np.append(coordenadasX,i)
+            coordenadasY = np.append(coordenadasY, value)
+        i+=1
+    return coordenadasX,coordenadasY
 
 
 app.layout = html.Div([
-
     html.H1('Titulo de la investigación', style={'font-size': '70px'}),
     html.P('En este proyecto, se tiene como objetivo realizar un análisis de usabilidad sobre el TFG de uno de los integrantes del grupo. Dicho TFG consiste en el desarrollo de un juego serio cuyo objetivo es la enseñanza de conceptos de Computational Thinking y nuestro objetivo es realizar pruebas sobre usuarios que nunca han estado en contacto con el proyecto'),
     html.H1('Curva de aprendizaje', style={'font-size': '50px'}),
@@ -154,8 +139,9 @@ app.layout = html.Div([
     Output("graphTime", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
+    coordenadasX, coordenadasY = sacarCoordenadas(playTime)
     fig = go.Figure(
-        data=go.Box(y=times, x=levels,  # replace with your own data source
+        data=go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
@@ -167,7 +153,7 @@ def buggaBugga(color):
             )
         ))
 
-    fig.add_trace(go.Scatter(x=vals, y=[np.average(times[i]) for i in range(numLevels)], name='Average time'))
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(playTime[i]) for i in range(numLevels)], name='Average time'))
 
     fig.update_xaxes(
         ticktext=levelsNames,
@@ -180,8 +166,9 @@ def buggaBugga(color):
     Output("graphTries", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
+    coordenadasX, coordenadasY = sacarCoordenadas(intentos)
     fig = go.Figure(
-        data=go.Box(y=tries, x=levels,  # replace with your own data source
+        data=go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
@@ -192,7 +179,9 @@ def buggaBugga(color):
                 text='Intentos por nivel'
             )
         ))
-    fig.add_trace(go.Scatter(x=vals, y=[np.average(tries[size*i:size*(i+1)]) for i in range(numLevels)],
+
+    a = [np.average(intentos[i]) for i in range(numLevels)]
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(intentos[i]) for i in range(numLevels)],
                              name='Average Tries'))
     fig.update_xaxes(
         ticktext=levelsNames,
@@ -205,8 +194,9 @@ def buggaBugga(color):
     Output("graphCodeLength", "figure"),
     Input("dropdown", "value"))
 def buggaBugga(color):
+    coordenadasX, coordenadasY = sacarCoordenadas(longCodigo)
     fig = go.Figure(
-        data=go.Box(y=codeLength, x=levels,  # replace with your own data source
+        data=go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                     boxpoints='all',
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
@@ -217,7 +207,8 @@ def buggaBugga(color):
                 text='Longitud del código'
             )
         ))
-    fig.add_trace(go.Scatter(x=vals, y=[np.average(codeLength[size*i:size*(i+1)]) for i in range(numLevels)],
+    a = [np.average(longCodigo[i]) for i in range(numLevels)]
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(longCodigo[i]) for i in range(numLevels)],
                              name='Average Tries'))
     fig.update_xaxes(
         ticktext=levelsNames,
@@ -232,9 +223,9 @@ def buggaBugga(color):
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(data=[
-        go.Bar(y=helps, x=levelsNames,  # replace with your own data source
+        go.Bar(y=np.array([ len(sinAyudas[i]) - np.sum(sinAyudas[i]) for i in range(numLevels)]), x=levelsNames,  # replace with your own data source
                name='Helped'),
-        go.Bar(y=notHelps, x=levelsNames,
+        go.Bar(y=np.array([ np.sum(sinAyudas[i]) for i in range(numLevels)]), x=levelsNames,
                name='Not helped')],
         layout=go.Layout(
             title=go.layout.Title(
@@ -251,9 +242,9 @@ def buggaBugga(color):
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(data=[
-        go.Bar(y=optim, x=levelsNames,  # replace with your own data source
+        go.Bar(y=np.array([ np.sum(solOptima[i]) for i in range(numLevels)]), x=levelsNames,  # replace with your own data source
                name='Optimal solution'),
-        go.Bar(y=notOptim, x=levelsNames,
+        go.Bar(y=np.array([ len(solOptima[i]) - np.sum(solOptima[i]) for i in range(numLevels)]), x=levelsNames,
                name='Not optimal')],
         layout=go.Layout(
             title=go.layout.Title(
@@ -275,12 +266,14 @@ def buggaBugga(color):
                 text='Tiempo dedicado'
             )
         ))
-    fig.add_trace(go.Box(y=timesNoExp, x=levels,  # replace with your own data source
+    coordenadasX, coordenadasY = sacarCoordenadas(playTimeExperimentados)
+    fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
                          name='Sin Experiencia'))
-    fig.add_trace(go.Box(y=timesExp, x=levels,  # replace with your own data source
+    coordenadasX, coordenadasY = sacarCoordenadas(playTimeNoExperimentados)
+    fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
@@ -306,12 +299,15 @@ def buggaBugga(color):
                 text='Intentos por nivel'
             )
         ))
-    fig.add_trace(go.Box(y=triesNoExp, x=levels,  # replace with your own data source
+    coordenadasX, coordenadasY = sacarCoordenadas(intentosNoExperimentados)
+    fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
                          name='Sin Experiencia'))
-    fig.add_trace(go.Box(y=triesExp, x=levels,  # replace with your own data source
+
+    coordenadasX, coordenadasY = sacarCoordenadas(intentosExperimentados)                       
+    fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
@@ -338,12 +334,15 @@ def buggaBugga(color):
             )
         ))
 
-    fig.add_trace(go.Box(y=codeLengthNoExp, x=levels,  # replace with your own data source
+    coordenadasX, coordenadasY = sacarCoordenadas(longCodigoNoExperimentados)
+    fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
                          name='Sin Experiencia'))
-    fig.add_trace(go.Box(y=codeLengthExp, x=levels,  # replace with your own data source
+
+    coordenadasX, coordenadasY = sacarCoordenadas(longCodigoExperimentados)
+    fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
@@ -365,10 +364,18 @@ def buggaBugga(color):
     Input("dropdown", "value"))
 def buggaBugga(color):
     fig = go.Figure(data=[
-        go.Bar(y=helps, x=levelsNames,  # replace with your own data source
-               name='Helped'),
-        go.Bar(y=notHelps, x=levelsNames,
-               name='Not helped')],
+        #Para los que SI TIENEN EXPERIENCIA
+        go.Bar(y=np.array([ len(sinAyudasExperimentados[i]) - np.sum(sinAyudasExperimentados[i]) for i in range(len(sinAyudasExperimentados))]), x=levelsNames,  # replace with your own data source
+               name='Helped with Experienced'),
+        go.Bar(y=np.array([ np.sum(sinAyudasExperimentados[i]) for i in range(len(sinAyudasExperimentados))]), x=levelsNames,
+               name='Not helped with Experience'),
+
+        #para los que NO TIENEN EXPERIENCIA
+        go.Bar(y=np.array([ len(sinAyudasNoExperimentados[i]) - np.sum(sinAyudasNoExperimentados[i]) for i in range(len(sinAyudasNoExperimentados))]), x=levelsNames,  # replace with your own data source
+               name='Helped without Experienced'),
+        go.Bar(y=np.array([ np.sum(sinAyudasNoExperimentados[i]) for i in range(len(sinAyudasNoExperimentados))]), x=levelsNames,
+               name='Not helped without Experience')],
+               
         layout=go.Layout(
             title=go.layout.Title(
                 text='Numero de Ayudas utilizadas'
@@ -391,19 +398,23 @@ def buggaBugga(color):
     ))
 
 
-    data =  [optimExp, notOptimExp, optimNoExp, notOptimNoExp]
+    # data =  [optimExp, notOptimExp, optimNoExp, notOptimNoExp]
+    data =  [np.array([ np.sum(solOptimaExperimentados[i]) for i in range(len(solOptimaExperimentados))]), 
+            np.array([ len(solOptimaExperimentados[i]) - np.sum(solOptimaExperimentados[i]) for i in range(len(solOptimaExperimentados))]), 
+            np.array([ np.sum(solOptimaNoExperimentados[i]) for i in range(len(solOptimaNoExperimentados))]), 
+            np.array([ len(solOptimaNoExperimentados[i]) - np.sum(solOptimaNoExperimentados[i]) for i in range(len(solOptimaNoExperimentados))])]
     names =  ["Optimo", "No Optimo"]
 
     for i in range(len(data)):
     ## put var1 and var2 together on the first subgrouped bar
         if i <= 1:
             fig.add_trace(
-                go.Bar(x=[levelsNames, ['Sin Experiencia']*len(levels)], y=data[i], name=names[i%2]),
+                go.Bar(x=[levelsNames, ['Con Experiencia']*numLevels], y=data[i], name=names[i%2]),
             )
         ## put var3 and var4 together on the first subgrouped bar
         else:
             fig.add_trace(
-                go.Bar(x=[levelsNames, ['Con Experiencia']*len(levels)], y= data[i], name=names[i%2]),
+                go.Bar(x=[levelsNames, ['Sin Experiencia']*numLevels], y= data[i], name=names[i%2]),
             )
 
 

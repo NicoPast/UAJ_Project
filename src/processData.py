@@ -72,6 +72,7 @@ def agruparProbadores(poblacion,soloNivelesCompletados=False):
                                                  'playTime':[poblacion[individuo].infoLevels[nivelJugado].playTime],
                                                  'codeLength':[poblacion[individuo].infoLevels[nivelJugado].codeLength],
                                                  'codeOptimo':[poblacion[individuo].infoLevels[nivelJugado].codeOptimo],
+                                                 'noHints':[poblacion[individuo].infoLevels[nivelJugado].noHints]
                                                   }
 
             #Si sí existe añadimos 1 al número de personas que lo han jugado y añadimos el número de intentos que ha hecho este probador
@@ -80,6 +81,7 @@ def agruparProbadores(poblacion,soloNivelesCompletados=False):
                 diccionarioNiveles[nivelJugado]['playTime'].append(poblacion[individuo].infoLevels[nivelJugado].playTime)
                 diccionarioNiveles[nivelJugado]['codeLength'].append(poblacion[individuo].infoLevels[nivelJugado].codeLength)
                 diccionarioNiveles[nivelJugado]['codeOptimo'].append(poblacion[individuo].infoLevels[nivelJugado].codeOptimo)
+                diccionarioNiveles[nivelJugado]['noHints'].append(poblacion[individuo].infoLevels[nivelJugado].noHints)
     return diccionarioNiveles
 
 #MEtodo para transformar las fechas almacenadas en las trazas a timestaps EPOCH
