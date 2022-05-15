@@ -8,32 +8,7 @@ app = Dash(__name__)
 
 # with open('path_to_file/person.json', 'r') as f:
 #   data = json.load(f) # as dictionary
-classroom = '''{"classroom": [
-    {"name": "Bob", "age": 12, "languages": ["English", "French"]},
-    {"name": "John", "age": 13, "languages": ["English"]},
-    {"name": "Boby", "age": 12, "languages": ["English", "French", "Spanish"]}
-    ]}'''
-classroom_dict = json.loads(classroom)
 
-print(classroom_dict)
-names = np.empty(len(classroom_dict['classroom']), dtype='object')
-ages = np.zeros(len(classroom_dict['classroom']))
-languages = np.empty(len(classroom_dict['classroom']), dtype='object')
-numLanguages = np.zeros(languages.size)
-i = 0
-for person in classroom_dict['classroom']:
-    names[i] = person['name']
-    ages[i] = person['age']
-    languages[i] = person['languages']
-    numLanguages[i] = len(languages[i])
-    print(names[i] + ':', ages[i], languages[i])
-    i += 1
-
-
-datExample = '''{[
-    {"userID": "1", "level1-Time": 10, "level2-Time": 20, "level3-Time": 40},
-    {"userID": "2", "level1-Time": 8, "level2-Time": 17, "level3-Time": 42},
-]}'''
 
 #Poblacion involucrada en las pruebas
 Probadores=getProbadores()

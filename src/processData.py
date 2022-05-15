@@ -7,8 +7,9 @@ from Parsing import hacerDiccionario,prettify
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import csv
+import sys
 
-
+CSV_DATA='results-survey945759.csv'
 #Clase que representa la info de un Nivel que ha realizado un Probador
 class levelInfo:
     tries=0
@@ -117,6 +118,9 @@ def getProbadores():
         #Recorremos los niveles en los que haya fallado
         for failed in trazas[nombreProbador]["FailedLevels"]:
             nombreNivel = failed["object"]["id"]
+            #el editor_level es una dinamica que no interesa
+            if nombreNivel=='editor_level':
+                continue
             #En caso de que no tenga info sobre este nivel se la añadimos
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
@@ -128,8 +132,11 @@ def getProbadores():
     ################################# Longitud del código  #####################################
         #Por cada nivel jugado miramos el codigo que mandó y contamos los bloques que lo forman
         for intento in trazas[nombreProbador]["LevelTries"]:
-            #En caso de que no tenga info sobre este nivel se la añadimos
             nombreNivel = intento["object"]["id"]
+            #el editor_level es una dinamica que no interesa
+            if nombreNivel=='editor_level':
+                continue
+            #En caso de que no tenga info sobre este nivel se la añadimos
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
 
@@ -148,6 +155,9 @@ def getProbadores():
         for succesfull in trazas[nombreProbador]["SuccessLevels"]:
             nombreNivel = succesfull["object"]["id"]
             timestamp = succesfull["timestamp"]
+            #el editor_level es una dinamica que no interesa
+            if nombreNivel=='editor_level':
+                continue
             #En caso de que no tenga info sobre este nivel se la añadimos
             if(not nombreNivel in Probadores[nombreProbador].infoLevels):            
                 Probadores[nombreProbador].infoLevels[nombreNivel]=levelInfo()
@@ -163,7 +173,10 @@ def getProbadores():
     #############Obtención datos específicos de cada alumno (Programador/NoProgramador, Género)
     #Leemos el csv entero
     datosCSV=[]
-    with open('results-survey945759.csv', 'r') as file:
+    file = CSV_DATA
+    if (len(sys.argv)>=3):
+        file=sys.argv[2]
+    with open(file, 'r') as file:
         #Como delimitador ponemos los ;
         reader = csv.reader(file,delimiter=';')
         for each_row in reader:
@@ -173,6 +186,8 @@ def getProbadores():
     columnaGenero = 8
     #Sacar quien es programador o no de todos los probadores
     for pos in range(1,len(datosCSV)):
+        if(len(datosCSV[pos])==0):
+            continue
         Probadores[datosCSV[pos][1]].genero = datosCSV[pos][columnaGenero]
         if datosCSV[pos][columnaProgramacion] == "No":
             Probadores[datosCSV[pos][1]].programador = False

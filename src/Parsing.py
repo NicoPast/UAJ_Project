@@ -1,4 +1,5 @@
 import json
+import sys
 
 '''
 Notas(Ricky y Ana): Eventos que hacen falta
@@ -58,7 +59,10 @@ def filter(objs):
     return objs
 
 def hacerDiccionario():
-    with open(TRACES_FILE) as traces:
+    file =TRACES_FILE
+    if (len(sys.argv)>=3):
+        file=sys.argv[1]
+    with open(file) as traces:
         all_traces = json.loads(traces.read())    
         for trace in all_traces:
             valid = ('verb' in trace and 'id' in trace['verb'] and 'object' in trace and 'definition' in trace['object'] and 'type' in trace['object']['definition'])
