@@ -152,7 +152,7 @@ def getProbadores():
 
             #Aumentamos contador con el número de veces que se ha completado cada nivel
             Probadores[nombreProbador].infoLevels[nombreNivel].tries =  Probadores[nombreProbador].infoLevels[nombreNivel].tries+1
-            Probadores[nombreProbador].infoLevels[nombreNivel].playTime =  timeToEpoch(timestamp) - Probadores[nombreProbador].infoLevels[nombreNivel].startTime
+            Probadores[nombreProbador].infoLevels[nombreNivel].playTime = abs( timeToEpoch(timestamp) - Probadores[nombreProbador].infoLevels[nombreNivel].startTime)
             Probadores[nombreProbador].infoLevels[nombreNivel].levelWasCompleted =  True
             Probadores[nombreProbador].infoLevels[nombreNivel].noHints =  succesfull["result"]["extensions"]["no_hints"]
             Probadores[nombreProbador].infoLevels[nombreNivel].codeOptimo =  succesfull["result"]["extensions"]["minimum_steps"]

@@ -2,7 +2,7 @@ from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
 import numpy as np
 import json
-from proccessData import getProbadores,agruparProbadores,separarProbadores
+from processData import getProbadores,agruparProbadores,separarProbadores
 
 app = Dash(__name__)
 
@@ -35,10 +35,13 @@ datExample = '''{[
     {"userID": "2", "level1-Time": 8, "level2-Time": 17, "level3-Time": 42},
 ]}'''
 
-size = np.random.randint(low=50, high=200)
-numLevels = np.random.randint(low=3, high=15)
+Probadores=getProbadores()
+NivelesGeneral=agruparProbadores(Probadores)
+levelsNames = NivelesGeneral.keys()
 
-levelsNames = ["Level " + str(i + 1) for i in range(numLevels)]
+size = len(Probadores)
+numLevels = len(levelsNames)
+
 
 vals = [i for i in range(numLevels)]
 
@@ -59,7 +62,7 @@ notOptimNoExp = []
 notOptimExp = []
 
 levels = np.empty(0)
-times = np.empty(0)
+times = list()
 timesExp = np.empty(0)
 timesNoExp = np.empty(0)
 tries = np.empty(0)
@@ -72,22 +75,19 @@ codeLengthNoExp = np.empty(0)
 for i in range(numLevels):
 
     levels = np.append(levels,np.zeros(size) + i)
-    times = np.append(times, np.random.uniform(
-        low=10 + 3*i, high=20 + 3*i, size=(size,)))
+    times.append(np.array(list(NivelesGeneral.values())[i]['playTime']))
     timesExp = np.append(timesExp, np.random.uniform(
         low=5 + i, high=30 + i, size=(size,)))
     timesNoExp = np.append(timesNoExp, np.random.uniform(
         low=10 + 5 * i, high=30 + 5 * i, size=(size,)))
 
-    tries = np.append(tries, np.random.randint(
-        low=5 + 2 * i, high=30 + 2 * i, size=(size,)))
+    tries = np.append(tries,np.array(list(NivelesGeneral.values())[i]['tries']))
     triesExp = np.append(triesExp, np.random.randint(
         low=5 + i, high=25 + i, size=(size,)))
     triesNoExp = np.append(triesNoExp, np.random.randint(
         low=8 + 5 * i, high=30 + 5 * i, size=(size,)))
 
-    codeLength = np.append(codeLength, np.random.randint(
-        low=10 + 2 * i, high=40 + 2 * i, size=(size,)))
+    codeLength = np.append(codeLength,np.array(list(NivelesGeneral.values())[i]['codeLength']))
     codeLengthExp = np.append(codeLengthExp, np.random.randint(
         low=7 + i, high=25 + i, size=(size,)))
     codeLengthNoExp = np.append(codeLengthNoExp, np.random.randint(
@@ -108,9 +108,7 @@ for i in range(numLevels):
     )))
     notHelpsExp.append(size - helpsExp[i])
 
-    optim.append(np.sum(np.random.choice(
-        a=[True, False], size=(size,), p=[1 - (startPoint + factor * i), startPoint + factor * i]
-    )))
+    optim.append(np.sum(np.array(list(NivelesGeneral.values())[i]['codeOptimo'])))
     notOptim.append(size - optim[i])
 
     optimNoExp.append(np.sum(np.random.choice(
@@ -169,7 +167,7 @@ def buggaBugga(color):
             )
         ))
 
-    fig.add_trace(go.Scatter(x=vals, y=[np.average(times[size*i:size*(i+1)]) for i in range(numLevels)], name='Average time'))
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(times[i]) for i in range(numLevels)], name='Average time'))
 
     fig.update_xaxes(
         ticktext=levelsNames,
