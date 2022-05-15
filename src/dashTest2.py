@@ -121,14 +121,14 @@ def buggaBugga(color):
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
                     # marker_color=color,
-                    name='Time values'),
+                    name='Valores de tiempo'),
         layout=go.Layout(
             title=go.layout.Title(
                 text='Tiempo dedicado'
             )
         ))
 
-    fig.add_trace(go.Scatter(x=vals, y=[np.average(playTime[i]) for i in range(numLevels)], name='Average time'))
+    fig.add_trace(go.Scatter(x=vals, y=[np.average(playTime[i]) for i in range(numLevels)], name='Tiempo medio'))
 
     fig.update_xaxes(
         ticktext=levelsNames,
@@ -148,7 +148,7 @@ def buggaBugga(color):
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
                     # marker_color=color,
-                    name='Tries values'),
+                    name='Valores de nº intentos'),
         layout=go.Layout(
             title=go.layout.Title(
                 text='Intentos por nivel'
@@ -157,7 +157,7 @@ def buggaBugga(color):
 
     a = [np.average(intentos[i]) for i in range(numLevels)]
     fig.add_trace(go.Scatter(x=vals, y=[np.average(intentos[i]) for i in range(numLevels)],
-                             name='Average Tries'))
+                             name='Nº medio de intentos'))
     fig.update_xaxes(
         ticktext=levelsNames,
         tickvals=vals)
@@ -176,7 +176,7 @@ def buggaBugga(color):
                     pointpos=0,
                     fillcolor='rgba(0,0,0,0.1)',
                     # marker_color=color,
-                    name='Tries values'),
+                    name='Valores de longitud de código'),
         layout=go.Layout(
             title=go.layout.Title(
                 text='Longitud del código'
@@ -184,7 +184,7 @@ def buggaBugga(color):
         ))
     a = [np.average(longCodigo[i]) for i in range(numLevels)]
     fig.add_trace(go.Scatter(x=vals, y=[np.average(longCodigo[i]) for i in range(numLevels)],
-                             name='Average Tries'))
+                             name='Longitud media de código'))
     fig.update_xaxes(
         ticktext=levelsNames,
         tickvals=vals)
@@ -199,9 +199,9 @@ def buggaBugga(color):
 def buggaBugga(color):
     fig = go.Figure(data=[
         go.Bar(y=np.array([ len(sinAyudas[i]) - np.sum(sinAyudas[i]) for i in range(numLevels)]), x=levelsNames,  # replace with your own data source
-               name='Helped'),
+               name='Necesitó ayuda'),
         go.Bar(y=np.array([ np.sum(sinAyudas[i]) for i in range(numLevels)]), x=levelsNames,
-               name='Not helped')],
+               name='NO necesitó ayuda')],
         layout=go.Layout(
             title=go.layout.Title(
                 text='Numero de Ayudas utilizadas'
@@ -218,9 +218,9 @@ def buggaBugga(color):
 def buggaBugga(color):
     fig = go.Figure(data=[
         go.Bar(y=np.array([ np.sum(solOptima[i]) for i in range(numLevels)]), x=levelsNames,  # replace with your own data source
-               name='Optimal solution'),
+               name='Solución óptima'),
         go.Bar(y=np.array([ len(solOptima[i]) - np.sum(solOptima[i]) for i in range(numLevels)]), x=levelsNames,
-               name='Not optimal')],
+               name='Solución NO óptima')],
         layout=go.Layout(
             title=go.layout.Title(
                 text='Soluciones óptimas'
@@ -246,13 +246,13 @@ def buggaBugga(color):
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
-                         name='Sin Experiencia'))
+                         name='Sin experiencia'))
     coordenadasX, coordenadasY = sacarCoordenadas(playTimeNoExperimentados)
     fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
-                         name='Con Experiencia'))
+                         name='Con experiencia'))
     fig.update_xaxes(
         ticktext=levelsNames,
         tickvals=vals)
@@ -279,14 +279,14 @@ def buggaBugga(color):
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
-                         name='Sin Experiencia'))
+                         name='Sin experiencia'))
 
     coordenadasX, coordenadasY = sacarCoordenadas(intentosExperimentados)                       
     fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
-                         name='Con Experiencia'))
+                         name='Con experiencia'))
     fig.update_xaxes(
         ticktext=levelsNames,
         tickvals=vals)
@@ -314,14 +314,14 @@ def buggaBugga(color):
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
-                         name='Sin Experiencia'))
+                         name='Sin experiencia'))
 
     coordenadasX, coordenadasY = sacarCoordenadas(longCodigoExperimentados)
     fig.add_trace(go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
                          boxpoints='all',
                          pointpos=0,
                          fillcolor='rgba(0,0,0,0.1)',
-                         name='Con Experiencia'))
+                         name='Con experiencia'))
 
     fig.update_xaxes(
         ticktext=levelsNames,
@@ -341,15 +341,15 @@ def buggaBugga(color):
     fig = go.Figure(data=[
         #Para los que SI TIENEN EXPERIENCIA
         go.Bar(y=np.array([ len(sinAyudasExperimentados[i]) - np.sum(sinAyudasExperimentados[i]) for i in range(len(sinAyudasExperimentados))]), x=levelsNames,  # replace with your own data source
-               name='Helped with Experienced'),
+               name='Necesitó ayuda y tenía experiencia'),
         go.Bar(y=np.array([ np.sum(sinAyudasExperimentados[i]) for i in range(len(sinAyudasExperimentados))]), x=levelsNames,
-               name='Not helped with Experience'),
+               name='NO necesitó ayuda y tenía experiencia'),
 
         #para los que NO TIENEN EXPERIENCIA
         go.Bar(y=np.array([ len(sinAyudasNoExperimentados[i]) - np.sum(sinAyudasNoExperimentados[i]) for i in range(len(sinAyudasNoExperimentados))]), x=levelsNames,  # replace with your own data source
-               name='Helped without Experienced'),
+               name='Necesitó ayuda y NO tenía experiencia'),
         go.Bar(y=np.array([ np.sum(sinAyudasNoExperimentados[i]) for i in range(len(sinAyudasNoExperimentados))]), x=levelsNames,
-               name='Not helped without Experience')],
+               name='NO necesitó ayuda y NO tenía experiencia')],
                
         layout=go.Layout(
             title=go.layout.Title(
@@ -378,18 +378,18 @@ def buggaBugga(color):
             np.array([ len(solOptimaExperimentados[i]) - np.sum(solOptimaExperimentados[i]) for i in range(len(solOptimaExperimentados))]), 
             np.array([ np.sum(solOptimaNoExperimentados[i]) for i in range(len(solOptimaNoExperimentados))]), 
             np.array([ len(solOptimaNoExperimentados[i]) - np.sum(solOptimaNoExperimentados[i]) for i in range(len(solOptimaNoExperimentados))])]
-    names =  ["Optimo", "No Optimo"]
+    names =  ["Óptimo", "No Óptimo"]
 
     for i in range(len(data)):
     ## put var1 and var2 together on the first subgrouped bar
         if i <= 1:
             fig.add_trace(
-                go.Bar(x=[levelsNames, ['Con Experiencia']*numLevels], y=data[i], name=names[i%2]),
+                go.Bar(x=[levelsNames, ['Con experiencia']*numLevels], y=data[i], name=names[i%2]),
             )
         ## put var3 and var4 together on the first subgrouped bar
         else:
             fig.add_trace(
-                go.Bar(x=[levelsNames, ['Sin Experiencia']*numLevels], y= data[i], name=names[i%2]),
+                go.Bar(x=[levelsNames, ['Sin experiencia']*numLevels], y= data[i], name=names[i%2]),
             )
 
 
