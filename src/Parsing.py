@@ -108,9 +108,11 @@ def prettify(user_traces):
         user_traces[key]['SuccessLevels'] = filter(user_traces[key]['SuccessLevels'])
         user_traces[key]['InitializedLevels'] = filter(user_traces[key]['InitializedLevels'])
     return user_traces
-def main():
-    printTraces(hacerDiccionario())
+
+
+# def main():
+#     printTraces(hacerDiccionario())
     
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
