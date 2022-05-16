@@ -2,7 +2,7 @@ from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
 import numpy as np
 import json
-from processData import getProbadores,agruparProbadores,separarProbadores
+from ProcessData import getProbadores,agruparProbadores,separarProbadores
 
 app = Dash(__name__)
 
@@ -105,14 +105,13 @@ app.layout = html.Div([
         clearable=False,
         style={'display': 'none'}
     )
-
 ], style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'})
 
 
 @app.callback(
     Output("graphTime", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphTime(color):
     coordenadasX, coordenadasY = sacarCoordenadas(playTime)
     fig = go.Figure(
         data=go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
@@ -139,7 +138,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphTries", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphTries(color):
     coordenadasX, coordenadasY = sacarCoordenadas(intentos)
     fig = go.Figure(
         data=go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
@@ -167,7 +166,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphCodeLength", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphCodeLength(color):
     coordenadasX, coordenadasY = sacarCoordenadas(longCodigo)
     fig = go.Figure(
         data=go.Box(y=coordenadasY, x=coordenadasX,  # replace with your own data source
@@ -195,7 +194,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphOptim", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphOptim(color):
     fig = go.Figure(data=[
         go.Bar(y=np.array([ np.sum(solOptima[i]) for i in range(numLevels)]), x=levelsNames,  # replace with your own data source
                name='Solución óptima'),
@@ -214,7 +213,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphTimeCompare", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphTimeCompare(color):
     fig = go.Figure(
         layout=go.Layout(
             title=go.layout.Title(
@@ -247,7 +246,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphTriesCompare", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphTriesCompare(color):
     fig = go.Figure(
         layout=go.Layout(
             title=go.layout.Title(
@@ -281,7 +280,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphCodeLengthCompare", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphCodeLengthCompare(color):
     fig = go.Figure(
         layout=go.Layout(
             title=go.layout.Title(
@@ -316,7 +315,7 @@ def buggaBugga(color):
 @app.callback(
     Output("graphOptimCompare", "figure"),
     Input("dropdown", "value"))
-def buggaBugga(color):
+def graphOptimCompare(color):
     fig = go.Figure(
         layout=go.Layout(
             title=go.layout.Title(
